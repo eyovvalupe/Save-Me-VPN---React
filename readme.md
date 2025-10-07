@@ -7,23 +7,15 @@
 |--------|----------|-------------|
 | `GET` | `/api/plans` | Get available subscription plans |
 | `POST` | `/api/retail/grant-subscription` | Grant subscription to user |
-
-### Invite Code Management
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/invite/my-codes/latest` | Get/create latest invite code |
-| `GET` | `/api/invite/my-codes` | List all my invite codes |
-| `POST` | `/api/invite/my-codes` | Create new invite code |
-| `PUT` | `/api/invite/my-codes/{code}/remark` | Update invite code remark |
-| `GET` | `/api/invite/my-users` | Get invited users list |
-| `GET` | `/api/invite/code` | Get public invite code info |
+| `GET` | `/api/retail/users` | Get retailer's user list |
+| `GET` | `/api/retail/users/{uuid}` | Get user detail |
 
 ### Authentication
 All APIs require `X-Access-Key` header with distributor's access key (format: `ak-xxxxxxxxxxxxxxxxx`).
 
 ### Base URL
 ```
-https://k2.52j.me
+http://k2.52j.me
 ```
 
 ## API Reference
@@ -112,7 +104,6 @@ Grants a subscription plan to a user on behalf of a distributor.
 ```json
 {
   "email": "user@example.com",
-  "inviteCode": "INVITE123", 
   "planPid": "monthly_plan",
   "quantity": 1,
   "dryRun": false
@@ -124,9 +115,9 @@ Grants a subscription plan to a user on behalf of a distributor.
 | Field | Type | Required | Description | Example |
 |-------|------|----------|-------------|---------|
 | `email` | string | Yes | Target user email address (must be valid email format) | `"user@example.com"` |
-| `inviteCode` | string | Yes | Distributor's invite code | `"INVITE123"` |
 | `planPid` | string | Yes | Plan identifier/PID to grant (get from /api/plans) | `"monthly_plan"` |
 | `quantity` | integer | Yes | Number of plan periods to grant (minimum 1) | `1` |
+| `dryRun` | boolean | No | Validation mode - performs all checks without executing the grant | `false` |
 
 #### Response
 
@@ -139,15 +130,10 @@ Grants a subscription plan to a user on behalf of a distributor.
     "user": {
       "uuid": "user_abc123",
       "expiredAt": 1640995200,
-      "isFirstOrderDone": true,
-      "inviteCode": {
-        "code": "INVITE123",
-        "createdAt": 1609459200,
-        "remark": "Distributor invite code"
-      }
+      "isFirstOrderDone": true
     },
     "grant": {
-      "uuid": "rgr_xyz789", 
+      "uuid": "rgr_xyz789",
       "planPid": "monthly_plan",
       "quantity": 1,
       "amount": 1000,
@@ -174,14 +160,6 @@ Grants a subscription plan to a user on behalf of a distributor.
 | `uuid` | string | User's unique identifier |
 | `expiredAt` | integer | Subscription expiration timestamp |
 | `isFirstOrderDone` | boolean | Whether user has completed first order |
-| `inviteCode` | object | Associated invite code information |
-
-**Invite Code Object**:
-| Field | Type | Description |
-|-------|------|-------------|
-| `code` | string | Invite code value |
-| `createdAt` | integer | Creation timestamp |
-| `remark` | string | Code description/remark |
 
 **Grant Object**:
 | Field | Type | Description |
@@ -196,8 +174,8 @@ Grants a subscription plan to a user on behalf of a distributor.
 
 ### Subscription Grant Process
 
-1. **Invite Code Validation**: Verify the invite code belongs to the authenticated distributor
-2. **Plan Validation**: Ensure the specified plan exists and is active  
+1. **Distributor Authentication**: Verify the request comes from an authenticated distributor
+2. **Plan Validation**: Ensure the specified plan exists and is active
 3. **User Processing**: Find existing user or create new user account
 4. **Ownership Check**: Verify user doesn't belong to a different distributor
 5. **Subscription Calculation**: Calculate new expiration time based on current status
@@ -224,7 +202,6 @@ Grants a subscription plan to a user on behalf of a distributor.
 |----------|------------|---------|
 | Invalid email format | 422 | "Email format invalid" |
 | Missing required fields | 422 | "Field [name] is required" |
-| Invalid invite code | 422 | "Invite code invalid" |
 | Inactive plan | 422 | "Plan inactive or not found" |
 | User ownership conflict | 409 | "User already belongs to another distributor" |
 | Authentication failure | 401 | "Authentication required" |
@@ -249,12 +226,11 @@ All errors follow the standard response format:
 
 **Request**:
 ```bash
-curl -X POST https://k2.52j.me/api/retail/grant-subscription \
+curl -X POST http://k2.52j.me/api/retail/grant-subscription \
   -H "X-Access-Key: <your_access_key>" \
   -H "Content-Type: application/json" \
   -d '{
     "email": "newuser@example.com",
-    "inviteCode": "ABC123",
     "planPid": "monthly_pro",
     "quantity": 1
   }'
@@ -264,21 +240,16 @@ curl -X POST https://k2.52j.me/api/retail/grant-subscription \
 ```json
 {
   "code": 0,
-  "message": "success", 
+  "message": "success",
   "data": {
     "user": {
       "uuid": "user_def456",
       "expiredAt": 1643673600,
-      "isFirstOrderDone": true,
-      "inviteCode": {
-        "code": "ABC123",
-        "createdAt": 1609459200,
-        "remark": "Premium distributor code"
-      }
+      "isFirstOrderDone": true
     },
     "grant": {
       "uuid": "rgr_ghi789",
-      "planPid": "monthly_pro", 
+      "planPid": "monthly_pro",
       "quantity": 1,
       "amount": 2999,
       "grantedAt": 1640995200
@@ -291,24 +262,62 @@ curl -X POST https://k2.52j.me/api/retail/grant-subscription \
 
 **Request**:
 ```bash
-curl -X POST https://k2.52j.me/api/retail/grant-subscription \
+curl -X POST http://k2.52j.me/api/retail/grant-subscription \
   -H "X-Access-Key: <your_access_key>" \
   -H "Content-Type: application/json" \
   -d '{
     "email": "customer@example.com",
-    "inviteCode": "XYZ789",
-    "planPid": "monthly_basic", 
+    "planPid": "monthly_basic",
     "quantity": 6
   }'
 ```
 
 This would grant 6 months of the basic monthly plan to the user.
 
-### Example 3: Get Available Plans
+### Example 3: DryRun Validation
 
 **Request**:
 ```bash
-curl -X GET https://k2.52j.me/api/plans \
+curl -X POST http://k2.52j.me/api/retail/grant-subscription \
+  -H "X-Access-Key: <your_access_key>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "customer@example.com",
+    "planPid": "monthly_pro",
+    "quantity": 1,
+    "dryRun": true
+  }'
+```
+
+**Response**:
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "user": {
+      "uuid": "user_abc123",
+      "expiredAt": 1643673600,
+      "isFirstOrderDone": true
+    },
+    "grant": {
+      "uuid": "dry_run_grant",
+      "planPid": "monthly_pro",
+      "quantity": 1,
+      "amount": 2999,
+      "grantedAt": 1640995200
+    }
+  }
+}
+```
+
+This validates the request without actually creating the grant record.
+
+### Example 4: Get Available Plans
+
+**Request**:
+```bash
+curl -X GET http://k2.52j.me/api/plans \
   -H "X-Access-Key: <your_access_key>"
 ```
 
@@ -349,192 +358,27 @@ curl -X GET https://k2.52j.me/api/plans \
 
 Use the `pid` values from this response when calling the grant-subscription endpoint.
 
-## Invite Code Management APIs
+## User Management APIs
 
-The following APIs allow distributors to manage their invite codes used for granting subscriptions.
+The following APIs allow distributors to manage and view their assigned users.
 
-### GET /api/invite/my-codes/latest
+### GET /api/retail/users
 
-Get or create the latest invite code for the authenticated distributor.
+Get list of users managed by the authenticated distributor.
 
-**Summary**: Get latest invite code  
-**Tags**: Invite Codes  
-**Authentication**: Required (`X-Access-Key`)
-
-#### Request
-
-**Parameters**: None
-
-#### Response
-
-**Success Response** (200):
-```json
-{
-  "code": 0,
-  "message": "success",
-  "data": {
-    "code": "ABC123",
-    "createdAt": 1609459200,
-    "remark": "Invite Code",
-    "link": "https://kaitu.app/invite?code=ABC123",
-    "config": {
-      "downloadRewardDays": 3,
-      "purchaseRewardDays": 7
-    },
-    "downloadCount": 15,
-    "downloadReward": 45,
-    "purchaseCount": 5,
-    "purchaseReward": 35
-  }
-}
-```
-
-**Data Fields**:
-| Field | Type | Description |
-|-------|------|-------------|
-| `code` | string | Invite code value (use this in grant-subscription) |
-| `createdAt` | integer | Creation timestamp |
-| `remark` | string | Code description/remark |
-| `link` | string | Full invite link URL |
-| `config` | object | Invite reward configuration |
-| `downloadCount` | integer | Number of users who downloaded via this code |
-| `downloadReward` | integer | Total reward days earned from downloads |
-| `purchaseCount` | integer | Number of users who purchased via this code |
-| `purchaseReward` | integer | Total reward days earned from purchases |
-
-### GET /api/invite/my-codes
-
-Get all invite codes for the authenticated distributor with pagination.
-
-**Summary**: List my invite codes  
-**Tags**: Invite Codes  
-**Authentication**: Required (`X-Access-Key`)
+**Summary**: Get retailer's user list
+**Tags**: Distributor APIs
 
 #### Request
+
+**Content-Type**: Not required (GET request)
 
 **Parameters**:
 | Parameter | Type | Required | Description | Default |
 |-----------|------|----------|-------------|---------|
 | `page` | integer | No | Page number (0-based) | `0` |
-| `pageSize` | integer | No | Items per page | `20` |
-
-#### Response
-
-**Success Response** (200):
-```json
-{
-  "code": 0,
-  "message": "success",
-  "data": {
-    "items": [
-      {
-        "code": "ABC123",
-        "createdAt": 1609459200,
-        "remark": "Primary Code",
-        "link": "https://kaitu.app/invite?code=ABC123",
-        "config": {
-          "downloadRewardDays": 3,
-          "purchaseRewardDays": 7
-        },
-        "downloadCount": 15,
-        "downloadReward": 45,
-        "purchaseCount": 5,
-        "purchaseReward": 35
-      }
-    ],
-    "pagination": {
-      "page": 0,
-      "pageSize": 20,
-      "total": 3
-    }
-  }
-}
-```
-
-### POST /api/invite/my-codes
-
-Create a new invite code for the authenticated distributor.
-
-**Summary**: Create new invite code  
-**Tags**: Invite Codes  
-**Authentication**: Required (`X-Access-Key`)
-
-#### Request
-
-**Parameters**: None (automatically creates with default remark)
-
-#### Response
-
-**Success Response** (200):
-```json
-{
-  "code": 0,
-  "message": "success",
-  "data": {
-    "code": "XYZ789",
-    "createdAt": 1640995200,
-    "remark": "邀请码",
-    "link": "https://kaitu.app/invite?code=XYZ789",
-    "config": {
-      "downloadRewardDays": 3,
-      "purchaseRewardDays": 7
-    },
-    "downloadCount": 0,
-    "downloadReward": 0,
-    "purchaseCount": 0,
-    "purchaseReward": 0
-  }
-}
-```
-
-### PUT /api/invite/my-codes/{code}/remark
-
-Update the remark/description for a specific invite code.
-
-**Summary**: Update invite code remark  
-**Tags**: Invite Codes  
-**Authentication**: Required (`X-Access-Key`)
-
-#### Request
-
-**Path Parameters**:
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `code` | string | Yes | Invite code to update |
-
-**Request Body**:
-```json
-{
-  "remark": "Updated description"
-}
-```
-
-#### Response
-
-**Success Response** (200):
-```json
-{
-  "code": 0,
-  "message": "success"
-}
-```
-
-### GET /api/invite/my-users
-
-Get list of users invited by the authenticated distributor.
-
-**Summary**: Get invited users  
-**Tags**: Invite Codes  
-**Authentication**: Required (`X-Access-Key`)
-
-#### Request
-
-**Parameters**:
-| Parameter | Type | Required | Description | Default |
-|-----------|------|----------|-------------|---------|
-| `page` | integer | No | Page number (0-based) | `0` |
-| `pageSize` | integer | No | Items per page | `20` |
-| `inviteCode` | string | No | Filter by specific invite code | - |
+| `pageSize` | integer | No | Items per page | `10` |
+| `email` | string | No | Filter by user email (exact match) | - |
 
 #### Response
 
@@ -547,39 +391,54 @@ Get list of users invited by the authenticated distributor.
     "items": [
       {
         "uuid": "user_abc123",
-        "expiredAt": 1643673600,
-        "isFirstOrderDone": true,
-        "inviteCode": {
-          "code": "ABC123",
-          "createdAt": 1609459200,
-          "remark": "Primary Code"
-        },
-        "deviceCount": 2
+        "email": "user@example.com",
+        "expiredAt": 1640995200,
+        "grantCount": 3,
+        "orderCount": 2,
+        "createdAt": 1609459200
       }
     ],
     "pagination": {
       "page": 0,
-      "pageSize": 20,
-      "total": 15
+      "pageSize": 10,
+      "total": 1
     }
   }
 }
 ```
 
-### GET /api/invite/code
+**User List Item Structure**:
+| Field | Type | Description |
+|-------|------|-------------|
+| `uuid` | string | User's unique identifier |
+| `email` | string | User's email address |
+| `expiredAt` | integer | Subscription expiration timestamp |
+| `grantCount` | integer | Number of grants received from this distributor |
+| `orderCount` | integer | Number of orders placed by this user |
+| `createdAt` | integer | User creation timestamp |
 
-Get public information about any invite code (no authentication required).
+**Error Responses**:
 
-**Summary**: Get invite code info  
-**Tags**: Invite Codes  
-**Authentication**: Not required
+| HTTP Status | Error Code | Description | Example Response |
+|------------|------------|-------------|------------------|
+| 200 | 422 | Invalid request parameters | `{"code": 422, "message": "Invalid page parameter"}` |
+| 200 | 401 | Authentication required | `{"code": 401, "message": "Authentication required"}` |
+| 200 | 403 | Insufficient permissions | `{"code": 403, "message": "Retailer permission required"}` |
+| 200 | 500 | Internal server error | `{"code": 500, "message": "Database query failed"}` |
+
+### GET /api/retail/users/{uuid}
+
+Get detailed information about a specific user managed by the authenticated distributor.
+
+**Summary**: Get user detail
+**Tags**: Distributor APIs
 
 #### Request
 
-**Parameters**:
+**Path Parameters**:
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `code` | string | Yes | Invite code to lookup |
+| `uuid` | string | Yes | User's unique identifier |
 
 #### Response
 
@@ -589,55 +448,180 @@ Get public information about any invite code (no authentication required).
   "code": 0,
   "message": "success",
   "data": {
-    "code": "ABC123",
-    "createdAt": 1609459200,
-    "remark": "Primary Code",
-    "link": "https://kaitu.app/invite?code=ABC123",
-    "config": {
-      "downloadRewardDays": 3,
-      "purchaseRewardDays": 7
+    "user": {
+      "uuid": "user_abc123",
+      "email": "user@example.com",
+      "expiredAt": 1640995200,
+      "createdAt": 1609459200,
+      "grantCount": 3,
+      "orderCount": 2
+    },
+    "grants": [
+      {
+        "uuid": "rgr_xyz789",
+        "planPid": "monthly_pro",
+        "quantity": 1,
+        "amount": 2999,
+        "grantedAt": 1640995200
+      }
+    ],
+    "orders": [
+      {
+        "uuid": "ord_abc123",
+        "title": "Monthly Pro Subscription",
+        "originAmount": 2999,
+        "payAmount": 2999,
+        "isPaid": true,
+        "paidAt": 1640995200,
+        "createdAt": 1640995200
+      }
+    ]
+  }
+}
+```
+
+**User Detail Structure**:
+| Field | Type | Description |
+|-------|------|-------------|
+| `uuid` | string | User's unique identifier |
+| `email` | string | User's email address |
+| `expiredAt` | integer | Subscription expiration timestamp |
+| `createdAt` | integer | User creation timestamp |
+| `grantCount` | integer | Number of grants received from this distributor |
+| `orderCount` | integer | Number of orders placed by this user |
+
+**Grant Object Structure**:
+| Field | Type | Description |
+|-------|------|-------------|
+| `uuid` | string | Grant record unique identifier |
+| `planPid` | string | Plan identifier that was granted |
+| `quantity` | integer | Number of periods granted |
+| `amount` | integer | Grant amount in cents |
+| `grantedAt` | integer | Grant execution timestamp |
+
+**Order Object Structure**:
+| Field | Type | Description |
+|-------|------|-------------|
+| `uuid` | string | Order unique identifier |
+| `title` | string | Order title/description |
+| `originAmount` | integer | Original order amount in cents |
+| `payAmount` | integer | Final payment amount in cents |
+| `isPaid` | boolean | Whether the order has been paid |
+| `paidAt` | integer | Payment timestamp (null if not paid) |
+| `createdAt` | integer | Order creation timestamp |
+
+**Error Responses**:
+
+| HTTP Status | Error Code | Description | Example Response |
+|------------|------------|-------------|------------------|
+| 200 | 422 | Invalid request parameters | `{"code": 422, "message": "User UUID cannot be empty"}` |
+| 200 | 404 | User not found or no permission | `{"code": 404, "message": "User not found or no permission"}` |
+| 200 | 401 | Authentication required | `{"code": 401, "message": "Authentication required"}` |
+| 200 | 403 | Insufficient permissions | `{"code": 403, "message": "Retailer permission required"}` |
+| 200 | 500 | Internal server error | `{"code": 500, "message": "Database query failed"}` |
+
+## User Management Examples
+
+### Example 5: Get User List
+
+**Request**:
+```bash
+curl -X GET http://k2.52j.me/api/retail/users?page=0&pageSize=10 \
+  -H "X-Access-Key: <your_access_key>"
+```
+
+**Response**:
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "items": [
+      {
+        "uuid": "user_abc123",
+        "email": "customer1@example.com",
+        "expiredAt": 1640995200,
+        "grantCount": 1,
+        "orderCount": 1,
+        "createdAt": 1609459200
+      },
+      {
+        "uuid": "user_def456",
+        "email": "customer2@example.com",
+        "expiredAt": 1643673600,
+        "grantCount": 2,
+        "orderCount": 2,
+        "createdAt": 1609459200
+      }
+    ],
+    "pagination": {
+      "page": 0,
+      "pageSize": 10,
+      "total": 2
     }
   }
 }
 ```
 
-## Invite Code Management Examples
+### Example 6: Search User by Email
 
-### Example 1: Get Latest Invite Code
-
+**Request**:
 ```bash
-curl -X GET https://k2.52j.me/api/invite/my-codes/latest \
+curl -X GET "http://k2.52j.me/api/retail/users?email=customer1@example.com" \
   -H "X-Access-Key: <your_access_key>"
 ```
 
-### Example 2: Create New Invite Code
+### Example 7: Get User Detail
 
+**Request**:
 ```bash
-curl -X POST https://k2.52j.me/api/invite/my-codes \
+curl -X GET http://k2.52j.me/api/retail/users/user_abc123 \
   -H "X-Access-Key: <your_access_key>"
 ```
 
-### Example 3: Update Invite Code Remark
-
-```bash
-curl -X PUT https://k2.52j.me/api/invite/my-codes/ABC123/remark \
-  -H "X-Access-Key: <your_access_key>" \
-  -H "Content-Type: application/json" \
-  -d '{"remark": "Premium Distributor Code"}'
-```
-
-### Example 4: Get Invited Users
-
-```bash
-curl -X GET https://k2.52j.me/api/invite/my-users?page=0&pageSize=10&inviteCode=ABC123 \
-  -H "X-Access-Key: <your_access_key>"
+**Response**:
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "user": {
+      "uuid": "user_abc123",
+      "email": "customer1@example.com",
+      "expiredAt": 1640995200,
+      "createdAt": 1609459200,
+      "grantCount": 1,
+      "orderCount": 1
+    },
+    "grants": [
+      {
+        "uuid": "rgr_xyz789",
+        "planPid": "monthly_pro",
+        "quantity": 1,
+        "amount": 2999,
+        "grantedAt": 1640995200
+      }
+    ],
+    "orders": [
+      {
+        "uuid": "ord_def456",
+        "title": "Monthly Pro Subscription",
+        "originAmount": 2999,
+        "payAmount": 2999,
+        "isPaid": true,
+        "paidAt": 1640995200,
+        "createdAt": 1640995200
+      }
+    ]
+  }
+}
 ```
 
 ## Security Considerations
 
 1. **Authentication Required**: All endpoints require valid Access Key authentication
 2. **Ownership Validation**: Users can only be managed by their associated distributor
-3. **Invite Code Security**: Distributors can only use their own invite codes
+3. **Distributor Authorization**: Only authenticated distributors can grant subscriptions
 4. **Input Validation**: All inputs are validated for format and business rules
 5. **Transaction Safety**: Database operations use transactions for data consistency
 6. **Access Key Security**: Keep your Access Key secure and do not share it publicly

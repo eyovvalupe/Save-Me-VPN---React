@@ -12,7 +12,7 @@ interface AuthState {
   updateBaseUrl: (url: string) => void;
 }
 
-const DEFAULT_BASE_URL = 'https://k2.52j.me';
+const DEFAULT_BASE_URL = 'http://k2.52j.me';
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -22,19 +22,33 @@ export const useAuthStore = create<AuthState>()(
       baseUrl: DEFAULT_BASE_URL,
 
       login: (config: AuthConfig) => {
+        // Trim whitespace from access key
+        const trimmedAccessKey = config.accessKey.trim();
+
         // Validate access key format
-        if (!config.accessKey.startsWith('ak-')) {
+        if (!trimmedAccessKey.startsWith('ak-')) {
           throw new Error('Invalid access key format. Must start with "ak-"');
         }
 
-        // Set authentication in API client
-        apiClient.setAuth(config);
+        console.log('Auth store login:', {
+          originalKey: config.accessKey,
+          trimmedKey: trimmedAccessKey,
+          baseUrl: config.baseUrl
+        });
+
+        // Set authentication in API client with trimmed key
+        apiClient.setAuth({
+          accessKey: trimmedAccessKey,
+          baseUrl: config.baseUrl
+        });
 
         set({
           isAuthenticated: true,
-          accessKey: config.accessKey,
+          accessKey: trimmedAccessKey,
           baseUrl: config.baseUrl,
         });
+
+        console.log('Auth store login successful');
       },
 
       logout: () => {

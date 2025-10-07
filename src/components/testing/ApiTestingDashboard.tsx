@@ -12,6 +12,11 @@ import { ApiTester } from './ApiTester';
 import { ApiStatusDashboard } from './ApiStatusDashboard';
 import { ApiDebugger } from './ApiDebugger';
 import { ApiDocumentation } from './ApiDocumentation';
+import { ApiConnectionTest } from './ApiConnectionTest';
+import { AccessKeyDebugger } from '../debug/AccessKeyDebugger';
+import { ApiHeaderTest } from './ApiHeaderTest';
+import { CorsDebugger } from './CorsDebugger';
+import { HttpMethodTester } from './HttpMethodTester';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -88,14 +93,19 @@ export const ApiTestingDashboard: React.FC = () => {
           </Box>
 
           <TabPanel value={value} index={0}>
+            <CorsDebugger />
+            <ApiConnectionTest />
             <ApiStatusDashboard />
           </TabPanel>
 
           <TabPanel value={value} index={1}>
+            <HttpMethodTester />
             <ApiTester />
           </TabPanel>
 
           <TabPanel value={value} index={2}>
+            <ApiHeaderTest />
+            <AccessKeyDebugger />
             <ApiDebugger />
           </TabPanel>
 

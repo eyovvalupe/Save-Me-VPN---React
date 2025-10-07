@@ -21,11 +21,21 @@ export interface PaginatedResponse<T> {
 export interface Plan {
   pid: string;
   label: string;
+  name?: string; // Alternative name field from API
+  description?: string;
   price: number;
   originPrice: number;
+  currency?: string;
   month: number;
+  duration?: number;
+  durationUnit?: string;
+  features?: string[];
   highlight: boolean;
   isActive: boolean;
+  discount?: {
+    percentage: number;
+    validUntil: string;
+  };
 }
 
 export type PlansResponse = ApiResponse<PaginatedResponse<Plan>>;

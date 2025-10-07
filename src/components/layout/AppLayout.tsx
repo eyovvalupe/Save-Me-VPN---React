@@ -41,6 +41,7 @@ interface AppLayoutProps {
 
 const navigationItems = [
   { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
+  { text: 'Plans', icon: <Timeline />, path: '/plans' },
   { text: 'Grant Subscription', icon: <Payment />, path: '/grant' },
   { text: 'Invite Codes', icon: <Code />, path: '/invites' },
   { text: 'API Testing', icon: <BugReport />, path: '/api-testing' },
