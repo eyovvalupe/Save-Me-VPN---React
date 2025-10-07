@@ -13,6 +13,11 @@ import {
   PaginationParams,
   InviteUsersParams,
   InviteCodeInfoParams,
+  RetailUser,
+  RetailUserDetail,
+  RetailUsersParams,
+  RetailUsersResponse,
+  RetailUserDetailResponse,
   API_ENDPOINTS,
   ErrorCodes,
 } from '../types/api';
@@ -27,7 +32,7 @@ class ApiClient {
 
     if (import.meta.env.VITE_USE_DIRECT_API === 'true') {
       // Use direct API calls (may have CORS issues)
-      baseURL = import.meta.env.VITE_API_BASE_URL || 'http://k2.52j.me';
+      baseURL = import.meta.env.VITE_API_BASE_URL || 'https://k2.52j.me';
       console.log('🌐 Using direct API calls to:', baseURL);
     } else if (import.meta.env.DEV) {
       // Use proxy in development
@@ -35,7 +40,7 @@ class ApiClient {
       console.log('🔄 Using proxy for API calls');
     } else {
       // Production mode
-      baseURL = import.meta.env.VITE_API_BASE_URL || 'http://k2.52j.me';
+      baseURL = import.meta.env.VITE_API_BASE_URL || 'https://k2.52j.me';
       console.log('🚀 Production mode, using:', baseURL);
     }
 
@@ -270,6 +275,36 @@ class ApiClient {
       params,
     });
     console.log('✅ Invite code info fetched successfully');
+    return response.data;
+  }
+
+  // User Management APIs
+  public async getRetailUsers(params?: RetailUsersParams): Promise<RetailUsersResponse> {
+    console.log('👥 Fetching retail users from:', API_ENDPOINTS.RETAIL_USERS, 'with params:', params);
+    const response = await this.client.request<RetailUsersResponse>({
+      method: 'GET',
+      url: API_ENDPOINTS.RETAIL_USERS,
+      params,
+    });
+    console.log('✅ Retail users fetched successfully:', {
+      usersCount: response.data.data?.items?.length || 0,
+      totalUsers: response.data.data?.pagination?.total || 0
+    });
+    return response.data;
+  }
+
+  public async getRetailUserDetail(uuid: string): Promise<RetailUserDetailResponse> {
+    const endpoint = API_ENDPOINTS.RETAIL_USER_DETAIL(uuid);
+    console.log('👤 Fetching retail user detail from:', endpoint);
+    const response = await this.client.request<RetailUserDetailResponse>({
+      method: 'GET',
+      url: endpoint,
+    });
+    console.log('✅ Retail user detail fetched successfully:', {
+      userUuid: response.data.data?.user?.uuid,
+      grantsCount: response.data.data?.grants?.length || 0,
+      ordersCount: response.data.data?.orders?.length || 0
+    });
     return response.data;
   }
 }

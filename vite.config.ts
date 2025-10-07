@@ -32,14 +32,14 @@ export default defineConfig({
     // https: true,
     proxy: {
       '/api': {
-        target: 'http://k2.52j.me',
+        target: 'https://k2.52j.me',
         changeOrigin: true,
         secure: true,
         ws: true,
         rewrite: (path) => path, // Keep the /api prefix
         headers: {
-          'Origin': 'http://k2.52j.me',
-          'Referer': 'http://k2.52j.me'
+          'Origin': 'https://k2.52j.me',
+          'Referer': 'https://k2.52j.me'
         },
         configure: (proxy, _options) => {
           proxy.on('error', (err, req, _res) => {
@@ -54,13 +54,13 @@ export default defineConfig({
           });
           proxy.on('proxyReq', (proxyReq, req, _res) => {
             // Add additional headers to help with CORS
-            proxyReq.setHeader('Origin', 'http://k2.52j.me');
-            proxyReq.setHeader('Referer', 'http://k2.52j.me');
+            proxyReq.setHeader('Origin', 'https://k2.52j.me');
+            proxyReq.setHeader('Referer', 'https://k2.52j.me');
 
             console.log('🚀 Proxying Request:', {
               method: req.method,
               originalUrl: req.url,
-              targetUrl: `http://k2.52j.me${req.url}`,
+              targetUrl: `https://k2.52j.me${req.url}`,
               headers: {
                 'X-Access-Key': proxyReq.getHeader('X-Access-Key') ? '***' : 'missing',
                 'Content-Type': proxyReq.getHeader('Content-Type'),

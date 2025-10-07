@@ -74,6 +74,12 @@ export const HttpMethodTester: React.FC = () => {
         endpoint: '/api/invite/my-users',
         icon: <GetApp />,
         testFn: () => apiClient.getInvitedUsers({ page: 0, pageSize: 5 })
+      },
+      {
+        method: 'GET',
+        endpoint: '/api/retail/users',
+        icon: <GetApp />,
+        testFn: () => apiClient.getRetailUsers({ page: 0, pageSize: 5 })
       }
     ];
 

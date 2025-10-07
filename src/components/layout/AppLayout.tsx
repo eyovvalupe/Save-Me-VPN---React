@@ -29,6 +29,7 @@ import {
   AccountCircle,
   BugReport,
   Timeline,
+  People,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
@@ -43,6 +44,7 @@ const navigationItems = [
   { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
   { text: 'Plans', icon: <Timeline />, path: '/plans' },
   { text: 'Grant Subscription', icon: <Payment />, path: '/grant' },
+  { text: 'User Management', icon: <People />, path: '/users' },
   { text: 'Invite Codes', icon: <Code />, path: '/invites' },
   { text: 'API Testing', icon: <BugReport />, path: '/api-testing' },
   { text: 'Settings', icon: <Settings />, path: '/settings' },

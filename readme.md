@@ -15,7 +15,7 @@ All APIs require `X-Access-Key` header with distributor's access key (format: `a
 
 ### Base URL
 ```
-http://k2.52j.me
+https://k2.52j.me
 ```
 
 ## API Reference
@@ -226,7 +226,7 @@ All errors follow the standard response format:
 
 **Request**:
 ```bash
-curl -X POST http://k2.52j.me/api/retail/grant-subscription \
+curl -X POST https://k2.52j.me/api/retail/grant-subscription \
   -H "X-Access-Key: <your_access_key>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -262,7 +262,7 @@ curl -X POST http://k2.52j.me/api/retail/grant-subscription \
 
 **Request**:
 ```bash
-curl -X POST http://k2.52j.me/api/retail/grant-subscription \
+curl -X POST https://k2.52j.me/api/retail/grant-subscription \
   -H "X-Access-Key: <your_access_key>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -278,7 +278,7 @@ This would grant 6 months of the basic monthly plan to the user.
 
 **Request**:
 ```bash
-curl -X POST http://k2.52j.me/api/retail/grant-subscription \
+curl -X POST https://k2.52j.me/api/retail/grant-subscription \
   -H "X-Access-Key: <your_access_key>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -317,7 +317,7 @@ This validates the request without actually creating the grant record.
 
 **Request**:
 ```bash
-curl -X GET http://k2.52j.me/api/plans \
+curl -X GET https://k2.52j.me/api/plans \
   -H "X-Access-Key: <your_access_key>"
 ```
 
@@ -526,7 +526,7 @@ Get detailed information about a specific user managed by the authenticated dist
 
 **Request**:
 ```bash
-curl -X GET http://k2.52j.me/api/retail/users?page=0&pageSize=10 \
+curl -X GET https://k2.52j.me/api/retail/users?page=0&pageSize=10 \
   -H "X-Access-Key: <your_access_key>"
 ```
 
@@ -567,7 +567,7 @@ curl -X GET http://k2.52j.me/api/retail/users?page=0&pageSize=10 \
 
 **Request**:
 ```bash
-curl -X GET "http://k2.52j.me/api/retail/users?email=customer1@example.com" \
+curl -X GET "https://k2.52j.me/api/retail/users?email=customer1@example.com" \
   -H "X-Access-Key: <your_access_key>"
 ```
 
@@ -575,7 +575,7 @@ curl -X GET "http://k2.52j.me/api/retail/users?email=customer1@example.com" \
 
 **Request**:
 ```bash
-curl -X GET http://k2.52j.me/api/retail/users/user_abc123 \
+curl -X GET https://k2.52j.me/api/retail/users/user_abc123 \
   -H "X-Access-Key: <your_access_key>"
 ```
 

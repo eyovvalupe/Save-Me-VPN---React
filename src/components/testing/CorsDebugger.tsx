@@ -19,7 +19,7 @@ export const CorsDebugger: React.FC = () => {
   const [testing, setTesting] = useState(false);
   const [results, setResults] = useState<any[]>([]);
   const [useProxy, setUseProxy] = useState(true);
-  const [customUrl, setCustomUrl] = useState('http://k2.52j.me');
+  const [customUrl, setCustomUrl] = useState('https://k2.52j.me');
 
   const testEndpoint = async (url: string, description: string) => {
     try {
@@ -135,7 +135,7 @@ export const CorsDebugger: React.FC = () => {
             label="API Base URL"
             value={customUrl}
             onChange={(e) => setCustomUrl(e.target.value)}
-            placeholder="http://k2.52j.me"
+            placeholder="https://k2.52j.me"
             size="small"
           />
         )}

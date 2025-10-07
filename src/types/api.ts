@@ -101,7 +101,6 @@ export type GrantSubscriptionResponse = ApiResponse<GrantSubscriptionData>;
 // Request Types
 export interface GrantSubscriptionRequest {
   email: string;
-  inviteCode: string;
   planPid: string;
   quantity: number;
   dryRun?: boolean;
@@ -124,6 +123,50 @@ export interface InviteUsersParams extends PaginationParams {
 export interface InviteCodeInfoParams {
   code: string;
 }
+
+// User Management Types
+export interface RetailUser {
+  uuid: string;
+  email: string;
+  expiredAt: number;
+  grantCount: number;
+  orderCount: number;
+  createdAt: number;
+}
+
+export interface RetailUserDetail extends RetailUser {
+  grants: GrantRecord[];
+  orders: UserOrder[];
+}
+
+export interface GrantRecord {
+  uuid: string;
+  planPid: string;
+  quantity: number;
+  amount: number;
+  grantedAt: number;
+}
+
+export interface UserOrder {
+  uuid: string;
+  title: string;
+  originAmount: number;
+  payAmount: number;
+  isPaid: boolean;
+  paidAt: number | null;
+  createdAt: number;
+}
+
+export interface RetailUsersParams extends PaginationParams {
+  email?: string;
+}
+
+export type RetailUsersResponse = ApiResponse<PaginatedResponse<RetailUser>>;
+export type RetailUserDetailResponse = ApiResponse<{
+  user: RetailUserDetail;
+  grants: GrantRecord[];
+  orders: UserOrder[];
+}>;
 
 // Error Types
 export interface ApiError {
@@ -151,6 +194,8 @@ export enum ErrorCodes {
 export const API_ENDPOINTS = {
   PLANS: '/api/plans',
   GRANT_SUBSCRIPTION: '/api/retail/grant-subscription',
+  RETAIL_USERS: '/api/retail/users',
+  RETAIL_USER_DETAIL: (uuid: string) => `/api/retail/users/${uuid}`,
   INVITE_CODES_LATEST: '/api/invite/my-codes/latest',
   INVITE_CODES: '/api/invite/my-codes',
   INVITE_CODE_REMARK: (code: string) => `/api/invite/my-codes/${code}/remark`,

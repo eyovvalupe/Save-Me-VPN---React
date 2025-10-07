@@ -12,7 +12,7 @@ interface AuthState {
   updateBaseUrl: (url: string) => void;
 }
 
-const DEFAULT_BASE_URL = 'http://k2.52j.me';
+const DEFAULT_BASE_URL = 'https://k2.52j.me';
 
 export const useAuthStore = create<AuthState>()(
   persist(

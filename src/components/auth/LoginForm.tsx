@@ -74,7 +74,7 @@ export const LoginForm: React.FC = () => {
     resolver: yupResolver(schema),
     defaultValues: {
       accessKey: '',
-      baseUrl: 'http://k2.52j.me',
+      baseUrl: 'https://k2.52j.me',
     },
   });
 
@@ -138,7 +138,7 @@ export const LoginForm: React.FC = () => {
                     {...field}
                     fullWidth
                     label="Base URL"
-                    placeholder="http://k2.52j.me"
+                    placeholder="https://k2.52j.me"
                     error={!!errors.baseUrl}
                     helperText={errors.baseUrl?.message}
                     sx={{ mb: 3 }}

@@ -9,7 +9,8 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { LoginForm } from './components/auth/LoginForm';
 import { AppLayout } from './components/layout/AppLayout';
 import { Dashboard } from './components/dashboard/Dashboard';
-import { GrantSubscriptionForm } from './components/subscription/GrantSubscriptionForm';
+import { GrantSubscription } from './components/subscription/GrantSubscription';
+import { UserManagement } from './components/users/UserManagement';
 import { InviteCodesDashboard } from './components/invites/InviteCodesDashboard';
 import { PlansGrid } from './components/plans/PlansGrid';
 import { ApiTestingDashboard } from './components/testing/ApiTestingDashboard';
@@ -84,7 +85,17 @@ function App() {
               element={
                 <ProtectedRoute>
                   <AppLayout>
-                    <GrantSubscriptionForm />
+                    <GrantSubscription />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <UserManagement />
                   </AppLayout>
                 </ProtectedRoute>
               }
